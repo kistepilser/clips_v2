@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CLIP ROULETTE // NEON SECTOR</title>
+  <meta name="description" content="Крути рулетку и открывай случайные Twitch-клипы в стиле CS:GO кейсов!" />
+
+  <!-- Cyberpunk Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+  <!-- PapaParse for CSV parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+  <!-- Project Styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Scanline overlay -->
+  <div class="scanlines"></div>
+
+  <!-- Animated grid background -->
+  <div class="cyber-grid"></div>
+
+  <!-- Floating neon particles -->
+  <div class="bg-glow bg-glow--1"></div>
+  <div class="bg-glow bg-glow--2"></div>
+  <div class="bg-glow bg-glow--3"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header__logo">
+      <div class="header__glitch-icon">&#9655;</div>
+      <div class="header__title-wrap">
+        <h1 class="header__title glitch-text" data-text="CLIP ROULETTE">CLIP ROULETTE</h1>
+        <div class="header__tagline">// NEON SECTOR v2.0</div>
+      </div>
+    </div>
+    <p class="header__subtitle">[ ИНИЦИАЛИЗАЦИЯ СЛУЧАЙНОГО КЛИПА <span class="blink">_</span> ]</p>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs" id="tabsNav">
+      <button class="tabs__btn tabs__btn--active" data-tab="roulette" id="tabBtnRoulette">
+        <span class="tabs__btn-marker"></span>
+        <span class="tabs__btn-label">РУЛЕТКА</span>
+      </button>
+      <button class="tabs__btn" data-tab="leaderboard" id="tabBtnLeaderboard">
+        <span class="tabs__btn-marker"></span>
+        <span class="tabs__btn-label">РЕЙТИНГ</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- ===== TAB 1: ROULETTE ===== -->
+    <div class="tab-content tab-content--active" id="tabRoulette">
+
+      <!-- Roulette Section -->
+      <section class="roulette-section" id="rouletteSection">
+        <div class="roulette-wrapper">
+          <div class="roulette-wrapper__corner roulette-wrapper__corner--tl"></div>
+          <div class="roulette-wrapper__corner roulette-wrapper__corner--tr"></div>
+          <div class="roulette-wrapper__corner roulette-wrapper__corner--bl"></div>
+          <div class="roulette-wrapper__corner roulette-wrapper__corner--br"></div>
+
+          <!-- Pointer -->
+          <div class="roulette-pointer"></div>
+          <div class="roulette-pointer-glow"></div>
+
+          <!-- Roulette viewport -->
+          <div class="roulette-viewport" id="rouletteViewport">
+            <div class="roulette-track" id="rouletteTrack"></div>
+          </div>
+
+          <!-- Edge fades -->
+          <div class="roulette-fade roulette-fade--left"></div>
+          <div class="roulette-fade roulette-fade--right"></div>
+        </div>
+
+        <!-- Spin button -->
+        <button class="spin-btn" id="spinBtn" disabled>
+          <span class="spin-btn__icon">&#9881;</span>
+          <span class="spin-btn__text">ЗАГРУЗКА ДАННЫХ...</span>
+          <span class="spin-btn__border"></span>
+        </button>
+
+        <!-- Stats bar -->
+        <div class="stats-bar" id="statsBar">
+          <div class="stats-bar__item">
+            <span class="stats-bar__label">КЛИПОВ В БАЗЕ</span>
+            <span class="stats-bar__value" id="totalClips">—</span>
+          </div>
+          <div class="stats-bar__divider">|</div>
+          <div class="stats-bar__item">
+            <span class="stats-bar__label">ПРОКРУТОК</span>
+            <span class="stats-bar__value" id="spinCount">0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Player Section -->
+      <section class="player-section" id="playerSection">
+        <div class="player-container" id="playerContainer">
+          <div class="player-placeholder" id="playerPlaceholder">
+            <div class="player-placeholder__hex">&#x2B22;</div>
+            <p class="player-placeholder__text">// ОЖИДАНИЕ ИНИЦИАЛИЗАЦИИ</p>
+            <p class="player-placeholder__sub">Нажмите кнопку для запуска рулетки</p>
+          </div>
+
+          <iframe
+            id="twitchEmbed"
+            class="player-iframe"
+            src=""
+            frameborder="0"
+            allowfullscreen="true"
+            scrolling="no"
+            style="display: none;"
+          ></iframe>
+        </div>
+
+        <!-- Clip metadata -->
+        <div class="clip-meta" id="clipMeta" style="display: none;">
+          <div class="clip-meta__header">
+            <div class="clip-meta__tag">NOW PLAYING</div>
+          </div>
+          <h2 class="clip-meta__title" id="clipTitle"></h2>
+          <div class="clip-meta__author">
+            <span class="clip-meta__author-label">АВТОР //</span>
+            <span class="clip-meta__author-name" id="clipClipper"></span>
+          </div>
+
+          <!-- Star Rating Widget -->
+          <div class="rating-widget" id="ratingWidget">
+            <div class="rating-widget__label">ОЦЕНКА:</div>
+            <div class="rating-widget__stars" id="ratingStars">
+              <button class="rating-widget__star" data-score="1" aria-label="1 звезда">&#9733;</button>
+              <button class="rating-widget__star" data-score="2" aria-label="2 звезды">&#9733;</button>
+              <button class="rating-widget__star" data-score="3" aria-label="3 звезды">&#9733;</button>
+              <button class="rating-widget__star" data-score="4" aria-label="4 звезды">&#9733;</button>
+              <button class="rating-widget__star" data-score="5" aria-label="5 звёзд">&#9733;</button>
+            </div>
+            <div class="rating-widget__info">
+              <span class="rating-widget__avg" id="ratingAvg">—</span>
+              <span class="rating-widget__sep">/</span>
+              <span class="rating-widget__max">5</span>
+              <span class="rating-widget__votes" id="ratingVotes">(0 голосов)</span>
+            </div>
+            <div class="rating-widget__status" id="ratingStatus"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== TAB 2: LEADERBOARD ===== -->
+    <div class="tab-content" id="tabLeaderboard">
+      <section class="leaderboard-section">
+        <div class="leaderboard-header">
+          <h2 class="leaderboard-header__title glitch-text" data-text="ТОП КЛИПОВ">ТОП КЛИПОВ</h2>
+          <p class="leaderboard-header__sub">// РЕЙТИНГ ЛУЧШИХ КЛИПОВ ПО ОЦЕНКАМ ЗРИТЕЛЕЙ</p>
+        </div>
+
+        <div class="leaderboard-loading" id="leaderboardLoading">
+          <div class="leaderboard-spinner"></div>
+          <p>ЗАГРУЗКА ДАННЫХ<span class="blink">...</span></p>
+        </div>
+
+        <div class="leaderboard-empty" id="leaderboardEmpty" style="display: none;">
+          <p>Пока никто не оценил клипы. Будь первым!</p>
+        </div>
+
+        <div class="leaderboard-grid" id="leaderboardGrid"></div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&#169; 2077 CLIP ROULETTE // NEON SECTOR. All streams belong to their operators.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
